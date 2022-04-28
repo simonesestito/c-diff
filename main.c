@@ -4,6 +4,7 @@
 #include <errno.h>
 #include "optsparser.h"
 #include "ioutils.h"
+#include "diff_runner.h"
 
 /**
  * Gestisci le opzioni da input, leggendo le stringhe in ARGV
@@ -15,6 +16,22 @@
  */
 int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options);
 
+/**
+ * Restituisce il numero minore dei due passati in input.
+ * Se i due numeri sono diversi, imposta il flag a 1.
+ *
+ * @param a Primo numero
+ * @param b Secondo numero
+ * @param flag Flag impostato a 1 se i due numeri sono diversi
+ * @return Il numero minore dei due
+ */
+inline int min_diff(int a, int b, int *flag) {
+    if (a != b)
+        *flag = 1;
+
+    return a < b ? a : b;
+}
+
 int main(int argc, const char **argv) {
     const char *args[OPT_DESCRIPTORS_LEN] = {0};
     struct opt_parsed parsed_options = {0, args};
@@ -23,24 +40,56 @@ int main(int argc, const char **argv) {
     }
 
     // Effettua redirect output stdout -> file se -o è presente
-    if (opt_is_present(&parsed_options, 'o')) {
-        const char *outfile = opt_get_arg(&parsed_options, 'o');
-        if (redirect_stdout(outfile) == -1)
-            fprintf(stderr, "Errore nella redirezione di stdout su %s: %s\n", outfile, strerror(errno));
-    }
+    stdout_redirect_if_requested(&parsed_options);
 
-    int file1 = open_read_file(opt_get_unnamed_arg(&parsed_options, 0));
-    int file2 = open_read_file(opt_get_unnamed_arg(&parsed_options, 1));
-    if (file1 == -1 || file2 == -1)
+    // Apri i due file
+    FILE *file1 = open_read_file(opt_get_unnamed_arg(&parsed_options, 0));
+    FILE *file2 = open_read_file(opt_get_unnamed_arg(&parsed_options, 1));
+    if (file1 == NULL || file2 == NULL)
         return EXIT_FAILURE;
 
-    // TODO: Leggi linee read_next_lines(), gestendo tutti gli errori
-    // TODO: Per ogni riga, gestisci il diff con strcmp
-    // TODO: Gestire tutte le opzioni
+    // Effettua la lettura in buffer da 50 righe, facendo il diff
+    int diff_result = 0; // Indica se i file sono uguali (0) o diversi (1)
+    char *buffer1[LINES_TO_READ] = {0};
+    char *buffer2[LINES_TO_READ] = {0};
+    int num_lines = LINES_TO_READ; // Valore massimo iniziale, poi si considera sempre il minore
+    int prev_lines = 0; // Linee lette nelle iterazioni precedenti
 
-    return EXIT_SUCCESS; // TODO: Exit code come il vero diff
+    do {
+        // Leggi il primo file, tenendo conto delle linee lette effettive
+        num_lines = min_diff(read_lines(file1, buffer1), num_lines, &diff_result);
+
+        if (num_lines > 0) {
+            // Non leggere se non ho letto nulla, o se c'è stato un errore (-1)
+            num_lines = min_diff(read_lines(file2, buffer2), num_lines, &diff_result);
+            printf("Post %d\n", num_lines);
+        }
+
+        if (num_lines > 0) {
+            // Sono state lette delle linee, al più considerane num_lines
+            // Esegui il vero e proprio diff
+            diff_result |= run_diff((const char **) buffer1,
+                                    (const char **) buffer2,
+                                    num_lines,
+                                    prev_lines,
+                                    &parsed_options);
+        }
+
+        prev_lines += num_lines;
+    } while (num_lines > 0);
+
+    if (num_lines < 0) {
+        // Si è verificato un errore
+        return EXIT_FAILURE;
+    }
+
+    // Free delle linee lette nel buffer. Devono essere liberate manualmente.
+    free_buffer(buffer1);
+    free_buffer(buffer2);
+
+    // Come il vero diff, l'exit code è 1 se diversi, 0 se uguali
+    return diff_result;
 }
-
 
 int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) {
     opt_descriptors_t options = {0};
