@@ -1,37 +1,39 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include "optsparser.h"
+#include "ioutils.h"
 
-void add_cli_options(opt_descriptors_t options);
+/**
+ * Gestisci le opzioni da input, leggendo le stringhe in ARGV
+ *
+ * @param argc Numero di argomenti in argv
+ * @param argv Argomenti ricevuti da CLI
+ * @param parsed_options Output del parsing delle opzioni ricevute
+ * @return 0 se è tutto ok, -1 se c'è un errore
+ */
+int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options);
 
 int main(int argc, const char **argv) {
-    opt_descriptors_t expected_options = {0};
     const char *args[OPT_DESCRIPTORS_LEN] = {0};
     struct opt_parsed parsed_options = {0, args};
-
-    add_cli_options(expected_options);
-    if (parse_options(argc, argv, expected_options, &parsed_options) == -1) {
-        print_help(argv[0], expected_options);
+    if (parse_input(argc, argv, &parsed_options) == -1) {
         return EXIT_FAILURE;
     }
 
-    free_descriptor(expected_options);
-
-    for (int i = 0; i < 2; i++) {
-        printf("Argomento %d: %s\n", i, opt_get_unnamed_arg(&parsed_options, i));
+    // Effettua redirect output stdout -> file se -o è presente
+    if (opt_is_present(&parsed_options, 'o')) {
+        const char *outfile = opt_get_arg(&parsed_options, 'o');
+        if (redirect_stdout(outfile) == -1)
+            fprintf(stderr, "Errore nella redirezione di stdout su %s: %s\n", outfile, strerror(errno));
     }
 
-    printf("Opzione -%c presente? %d\n", 'g', opt_is_present(&parsed_options, 'g'));
-    printf("Opzione -%c presente? %d\n", 's', opt_is_present(&parsed_options, 's'));
-    printf("Opzione -%c presente? %d\n", 'd', opt_is_present(&parsed_options, 'd'));
-    printf("Opzione -%c presente? %d\n", 'u', opt_is_present(&parsed_options, 'u'));
-    printf("Opzione -%c presente? %d\n", 'v', opt_is_present(&parsed_options, 'v'));
-    printf("Opzione -%c presente? %d\n", 'o', opt_is_present(&parsed_options, 'o'));
-    if (opt_is_present(&parsed_options, 'o'))
-        printf("Parametro di -%c: %s\n", 'o', opt_get_arg(&parsed_options, 'o'));
+    printf("Hello, world!\n");
 }
 
-void add_cli_options(opt_descriptors_t options) {
+int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) {
+    opt_descriptors_t options = {0};
     opt_add_unnamed_descriptor(options, 0, "FILE_1");
     opt_add_unnamed_descriptor(options, 1, "FILE_2");
     opt_add_descriptor(options, 'g', "Stampa una riga esplicita nel caso i file siano diversi", 0);
@@ -40,4 +42,18 @@ void add_cli_options(opt_descriptors_t options) {
     opt_add_descriptor(options, 'u', "Stampa i numeri delle righe uguali", 0);
     opt_add_descriptor(options, 'v', "Stampa le singole selezionate (uguali o diverse)", 0);
     opt_add_descriptor(options, 'o', "Redireziona l'output su di un file", 1);
+
+    if (parse_options(argc, argv, options, parsed_options) == -1) {
+        print_help(argv[0], options);
+        return -1;
+    }
+
+    free_descriptor(options);
+
+    // Controlla opzioni mutuamente esclusive
+    if (opt_is_present(parsed_options, 'd') && opt_is_present(parsed_options, 'u')) {
+        fprintf(stderr, "Le opzioni -d e -u sono mutuamente esclusive\n");
+        return -1;
+    }
+    return 0;
 }
