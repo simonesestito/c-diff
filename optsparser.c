@@ -114,24 +114,24 @@ void free_descriptor(const opt_descriptors_t descriptors) {
 }
 
 void print_help(const char* execfile, const opt_descriptors_t descriptors) {
-    printf("Utilizzo:\n");
-    printf("%s", execfile);
+    fprintf(stderr, "Utilizzo:\n");
+    fprintf(stderr, "%s", execfile);
 
     // Stampa gli argomenti senza nome
     const int unnamed_options = count_unnamed_options(descriptors);
     for (int i = 0; i < unnamed_options; i++) {
-        printf(" [%s]", descriptors[26 + i]->description);
+        fprintf(stderr, " [%s]", descriptors[26 + i]->description);
     }
 
     // Descrivi le opzioni vere e proprie
-    printf(" [...OPZIONI]\n");
+    fprintf(stderr, " [...OPZIONI]\n");
     for (int i = 0; i < 26; i++) {
         const struct opt_descriptor *descriptor = descriptors[i];
         if (descriptor != NULL) {
-            printf("-%c %s", 'a' + i, descriptor->description);
+            fprintf(stderr, "-%c %s", 'a' + i, descriptor->description);
             if (descriptor->has_attribute)
-                printf(" [...]");
-            printf("\n");
+                fprintf(stderr, " [...]");
+            fprintf(stderr, "\n");
         }
     }
 }

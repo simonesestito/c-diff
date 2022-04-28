@@ -62,7 +62,6 @@ int main(int argc, const char **argv) {
         if (num_lines > 0) {
             // Non leggere se non ho letto nulla, o se c'è stato un errore (-1)
             num_lines = min_diff(read_lines(file2, buffer2), num_lines, &diff_result);
-            printf("Post %d\n", num_lines);
         }
 
         if (num_lines > 0) {
