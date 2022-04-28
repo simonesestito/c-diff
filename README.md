@@ -1,6 +1,10 @@
 # "Diff" C software
 Diff program developed in C, as an homework for the "Operating Systems" university course.
 
+## Homework Report (Italian)
+
+https://docs.google.com/document/d/1ynnmrZ6o_y_MNkrBKwG56GYn-4y8Ea2GgoZZ5xOZKlA/edit?usp=sharing
+
 ## License
 
     Copyright 2022 Simone Sestito
