@@ -29,8 +29,18 @@ int main(int argc, const char **argv) {
             fprintf(stderr, "Errore nella redirezione di stdout su %s: %s\n", outfile, strerror(errno));
     }
 
-    printf("Hello, world!\n");
+    int file1 = open_read_file(opt_get_unnamed_arg(&parsed_options, 0));
+    int file2 = open_read_file(opt_get_unnamed_arg(&parsed_options, 1));
+    if (file1 == -1 || file2 == -1)
+        return EXIT_FAILURE;
+
+    // TODO: Leggi linee read_next_lines(), gestendo tutti gli errori
+    // TODO: Per ogni riga, gestisci il diff con strcmp
+    // TODO: Gestire tutte le opzioni
+
+    return EXIT_SUCCESS; // TODO: Exit code come il vero diff
 }
+
 
 int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) {
     opt_descriptors_t options = {0};
