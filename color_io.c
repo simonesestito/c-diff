@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <errno.h>
 
 int printf_ansi(const char *ansi_code, const char *format, ...) {
     // Leggi i variadic parameters dai ..., da passare a printf
@@ -17,6 +18,7 @@ int printf_ansi(const char *ansi_code, const char *format, ...) {
     } else {
         // Non è un TTY (es: file), usa la printf classica (vprintf per via di va_list)
         result = vprintf(format, args);
+        errno = 0; // Reset del errno (isatty lo imposta), altrimenti crea problema ad altre funzioni successivamente.
     }
 
     // Dealloca gli argomenti
