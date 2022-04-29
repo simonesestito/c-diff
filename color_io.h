@@ -2,6 +2,10 @@
 #define HW1_COLOR_IO_H
 #include <wchar.h>
 
+/**
+ * Costanti ANSI per modificare lo stile dell'output.
+ * Verranno usati da printf_ansi solo stdout è un tty.
+ */
 #define ANSI_RESET_PREFIX       "\x1b[0m"
 #define ANSI_BOLD_PREFIX        "\x1b[1m"
 #define ANSI_RED_PREFIX         "\x1b[91m"

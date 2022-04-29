@@ -7,6 +7,7 @@ int parse_options(const int argc,
                   const char **argv,
                   const opt_descriptors_t descriptors,
                   struct opt_parsed *output) {
+    // Conta quanti argomenti obbligatori senza nome mi aspetto (es: file1, file2)
     const int unnamed_options = count_unnamed_options(descriptors);
 
     if (argc <= unnamed_options) {
@@ -23,12 +24,16 @@ int parse_options(const int argc,
             return -1;
         }
 
+        // L'opzione è presente: il bit corrispondente all'i-esimo argomento senza nome
+        // Vedere i commenti di struct opt_parsed
         output->opts_mask |= 1 << (25 + i);
         output->opts_args[25 + i] = argv[i];
     }
 
-    // Leggi le opzioni
-    char waiting_for_argument = 0; // Mi aspetto di leggere un parametro, se >0
+    // Leggi le opzioni con nome (-o, -v, ...)
+    // Indica se mi aspetto di leggere un parametro
+    // (>0, è la lettera dell'opzione di cui attendo il parametro)
+    char waiting_for_argument = 0;
     for (int i = unnamed_options + 1; i < argc; i++) {
         if ((argv[i][0] == '-') != (waiting_for_argument == 0)) {
             // Ricevuto diverso da ciò che mi aspettavo
@@ -41,14 +46,15 @@ int parse_options(const int argc,
             output->opts_args[waiting_for_argument - 'a'] = argv[i];
             waiting_for_argument = 0;
         } else {
-            // Leggi l'opzione
+            // Leggi la prossima opzione
             const char option = argv[i][1];
             const int option_index = option - 'a';
             if (option_index < 0 || option_index >= 26 || argv[i][2] != '\0') {
-                // Opzione invalida
+                // Opzione invalida (es: -1, -A, -parola)
                 fprintf(stderr, "Opzione non valida: %s\n\n", argv[i]);
                 return -1;
             }
+            // Ottieni indicazione sulle specifiche di questa opzione (se esiste)
             const struct opt_descriptor *descriptor = descriptors[option_index];
             if (descriptor == NULL) {
                 // Opzione inesistente
@@ -56,8 +62,9 @@ int parse_options(const int argc,
                 return -1;
             }
 
+            // Ho bisogno di leggere subito dopo il parametro o un'altra opzione?
             waiting_for_argument = descriptor->has_attribute ? option : 0;
-            opt_set_present(output, option);
+            opt_set_present(output, option); // L'opzione è presente nell'output parsed
         }
     }
 
@@ -72,6 +79,7 @@ int parse_options(const int argc,
 
 int count_unnamed_options(const opt_descriptors_t descriptors) {
     int i = 26;
+    // opt_descriptors_t può terminare con NULL, oppure essere pieno
     while (i < OPT_DESCRIPTORS_LEN && descriptors[i] != NULL) {
         i++;
     }
@@ -91,6 +99,7 @@ void opt_add_descriptor(opt_descriptors_t descriptors, char option, const char* 
 }
 
 void opt_add_unnamed_descriptor(opt_descriptors_t descriptors, int index, const char* name) {
+    // Equivale a un'opzione obbligatoria, dopo le lettere alfabetiche
     opt_add_descriptor(descriptors, 'z' + 1 + index, name, 1);
 }
 
@@ -112,6 +121,7 @@ const char* opt_get_unnamed_arg(const struct opt_parsed *parsed, int option) {
 
 void free_descriptor(const opt_descriptors_t descriptors) {
     for (int i = 0; i < OPT_DESCRIPTORS_LEN; i++) {
+        // Libera ogni descrittore, fino alla fine (NULL)
         if (descriptors[i] == NULL)
             continue;
 

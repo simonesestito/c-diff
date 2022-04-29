@@ -35,6 +35,7 @@ inline int min_diff(int a, int b, int *flag) {
 }
 
 int main(int argc, const char **argv) {
+    // Esegui il parsing degli argomenti
     const char *args[OPT_DESCRIPTORS_LEN] = {0};
     struct opt_parsed parsed_options = {0, args};
     if (parse_input(argc, argv, &parsed_options) == -1) {
@@ -104,6 +105,7 @@ int main(int argc, const char **argv) {
 }
 
 int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) {
+    // Specifica le opzioni che ci aspettiamo
     opt_descriptors_t options = {0};
     opt_add_unnamed_descriptor(options, 0, "FILE_1");
     opt_add_unnamed_descriptor(options, 1, "FILE_2");
@@ -114,14 +116,17 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) 
     opt_add_descriptor(options, 'v', "Stampa le singole selezionate (uguali o diverse)", 0);
     opt_add_descriptor(options, 'o', "Redireziona l'output su di un file", 1);
 
+    // Prova ad eseguire il parsing, oppure mostra il messaggio di utilizzo
     if (parse_options(argc, argv, options, parsed_options) == -1) {
         print_help(argv[0], options);
         return -1;
     }
 
+    // Libera la memoria allocata dai descrittori delle opzioni argv
+    // (non servono più dopo aver fatto il parsing, servirà solo il risultato di questa azione)
     free_descriptor(options);
 
-    // Controlla opzioni mutuamente esclusive
+    // Controlla opzioni mutuamente esclusive o casi particolari
     if (opt_is_present(parsed_options, 'd') && opt_is_present(parsed_options, 'u')) {
         fprintf(stderr, "Le opzioni -d e -u sono mutuamente esclusive\n");
         return -1;

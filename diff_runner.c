@@ -29,7 +29,7 @@ void handle_identical_output(const char *line, const char *filename1, const char
 
 int run_diff(const char **buffer1, const char **buffer2, int buffer_lines, int prev_lines,
              const struct opt_parsed *options) {
-    // Ottieni i nomi dei file
+    // Ottieni i nomi dei file dalle opzioni da terminale
     const char *filename1 = opt_get_unnamed_arg(options, 0);
     const char *filename2 = opt_get_unnamed_arg(options, 1);
 
