@@ -63,6 +63,7 @@ int parse_options(const int argc,
 
     // Controlla se gli argomenti sono finiti ma attendevo ancora un argomento
     if (waiting_for_argument) {
+        fprintf(stderr, "Parametro dell'opzione atteso\n\n");
         return -1;
     }
 
