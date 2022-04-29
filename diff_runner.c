@@ -27,6 +27,17 @@ void handle_different_output(const char *line1, const char *line2, const char *f
 void handle_identical_output(const char *line, const char *filename1, const char *filename2, unsigned int line_index,
                              unsigned int verbose_output);
 
+/**
+ * Dati due buffer di più linee, esegui il diff.
+ * A seconda delle opzioni passate, verrà modificato l'output su stdout.
+ *
+ * @param buffer1 Primo buffer da confrontare
+ * @param buffer2 Secondo buffer da confrontare
+ * @param buffer_lines Linee contenute nei due buffer
+ * @param prev_lines Offset delle linee rispetto al contenuto vero del file
+ * @param options Opzioni da considerare nell'esecuzione del diff
+ * @return 1 se ci sono differenze, 0 altrimenti
+ */
 int run_diff(const char **buffer1, const char **buffer2, int buffer_lines, int prev_lines,
              const struct opt_parsed *options) {
     // Ottieni i nomi dei file dalle opzioni da terminale

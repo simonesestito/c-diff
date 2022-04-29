@@ -3,6 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * A partire dai parametri passati in input, determina
+ * quali opzioni sono state passate e ne esegue la validazione.
+ *
+ * @param argc Numero degli argomenti
+ * @param argv Argomenti ricevuti dal sistema operativo
+ * @param descriptors Descrivono le varie opzioni possibili e aspettate
+ * @param output Scrive le opzioni successivamente al parsing
+ * @return 0 se è riuscito, -1 se c'è un errore.
+ *          Con un errore, è opportuno mostrare il messaggio di help.
+ */
 int parse_options(const int argc,
                   const char **argv,
                   const opt_descriptors_t descriptors,
@@ -77,6 +88,11 @@ int parse_options(const int argc,
     return 0;
 }
 
+/**
+ * Ottieni il numero di opzioni senza nome obbligatorie sono presenti in un opt_descriptor
+ *
+ * @param descriptors Descrittore delle opzioni
+ */
 int count_unnamed_options(const opt_descriptors_t descriptors) {
     int i = 26;
     // opt_descriptors_t può terminare con NULL, oppure essere pieno
@@ -87,6 +103,13 @@ int count_unnamed_options(const opt_descriptors_t descriptors) {
     return i - 26;
 }
 
+/**
+ * Aggiungi un parametro nei descrittori delle opzioni
+ *
+ * @param descriptors Descrittori delle opzioni
+ * @param description Nome dell'opzione visualizzata all'utente
+ * @param has_arg Indica se ha bisogno di un argomento extra
+ */
 void opt_add_descriptor(opt_descriptors_t descriptors, char option, const char* description, int has_arg) {
     int i = option - 'a';
     // Alloca una struttura
@@ -97,27 +120,68 @@ void opt_add_descriptor(opt_descriptors_t descriptors, char option, const char* 
     descriptors[i]->has_attribute = has_arg;
 }
 
+/**
+ * Aggiungi un parametro senza nome nei descrittori dell'input
+ *
+ * @param descriptors Descrittori delle opzioni
+ * @param index Indice dell'opzione dell'input
+ * @param name Nome dell'opzione visualizzata all'utente
+ */
 void opt_add_unnamed_descriptor(opt_descriptors_t descriptors, int index, const char* name) {
     // Equivale a un'opzione obbligatoria, dopo le lettere alfabetiche
     opt_add_descriptor(descriptors, (char)('z' + 1 + index), name, 1);
 }
 
+/**
+ * Controlla se un'opzione è presente nelle opzioni post-parsing.
+ *
+ * @param parsed Opzioni post-parsing
+ * @param option Carattere nome dell'opzione
+ * @return 0 se non è presente, un altro numero altrimenti
+ */
 unsigned int opt_is_present(const struct opt_parsed *parsed, char option) {
     return parsed->opts_mask & (1u << (option - 'a'));
 }
 
+/**
+ * Imposta un'opzione come presente nelle opzioni post-parsing.
+ *
+ * @param parsed Opzioni post-parsing
+ * @param option Carattere nome dell'opzione
+ */
 void opt_set_present(struct opt_parsed *parsed, char option) {
     parsed->opts_mask |= 1 << (option - 'a');
 }
 
+/**
+ * Ottieni l'argomento dell'opzione.
+ *
+ * @param parsed Opzioni post-parsing
+ * @param option Carattere nome dell'opzione
+ * @return La stringa argomento dell'opzione.
+ *          Se l'opzione non è presente o non ha un argomento, il risultato è indefinito.
+ */
 const char* opt_get_arg(const struct opt_parsed *parsed, char option) {
     return parsed->opts_args[option - 'a'];
 }
 
+/**
+ * Ottieni l'argomento senza nome alla posizione indicata
+ *
+ * @param parsed Opzioni post-parsing
+ * @param option Indice dell'opzione senza posizione
+ * @return La stringa argomento dell'opzione.
+ *          Se l'opzione non è presente o non ha un argomento, il risultato è indefinito.
+ */
 const char* opt_get_unnamed_arg(const struct opt_parsed *parsed, int option) {
     return parsed->opts_args[option + 26];
 }
 
+/**
+ * Ripulisci la memoria allocata dai descrittori dell'input.
+ *
+ * @param descriptors Descrittori da ripulire
+ */
 void free_descriptor(const opt_descriptors_t descriptors) {
     for (int i = 0; i < OPT_DESCRIPTORS_LEN; i++) {
         // Libera ogni descrittore, fino alla fine (NULL)
@@ -128,6 +192,14 @@ void free_descriptor(const opt_descriptors_t descriptors) {
     }
 }
 
+/**
+ * Scrivi il messaggio di help, sullo stderr.
+ *
+ * Indica come utilizzare il comando con le sue opzioni
+ *
+ * @param execfile
+ * @param descriptors
+ */
 void print_help(const char* execfile, const opt_descriptors_t descriptors) {
     fprintf(stderr, "Utilizzo:\n");
     fprintf(stderr, "%s", execfile);

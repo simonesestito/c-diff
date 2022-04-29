@@ -4,6 +4,15 @@
 #include <unistd.h>
 #include <errno.h>
 
+/**
+ * Esegue una print su stdout, includendo il codice ANSI dalle costanti,
+ * tali da rendere colorato o modificare lo stile dell'output.
+ *
+ * @param ansi_code Codice di controllo ANSI
+ * @param format Formato dell'output di printf
+ * @param ... Argomenti di printf
+ * @return Output di printf
+ */
 int printf_ansi(const char *ansi_code, const char *format, ...) {
     // Leggi i variadic parameters dai ..., da passare a printf
     va_list args;

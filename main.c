@@ -94,6 +94,7 @@ int main(int argc, const char **argv) {
     free_buffer(buffer1);
     free_buffer(buffer2);
 
+    // Output della linea finale
     int show_different_summary = opt_is_present(&parsed_options, 'g');
     int show_identical_summary = opt_is_present(&parsed_options, 's');
 
