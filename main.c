@@ -140,8 +140,8 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) 
 
     int contains_v = opt_is_present(parsed_options, 'v');
     if (!contains_u && !contains_d && contains_v) {
-        fprintf(stderr, "Errore: -v senza -d ne -u non ha senso\n");
-        return -1;
+        fprintf(stderr, "WARN: -v senza -d ne -u non ha effetto\n");
     }
+
     return 0;
 }
