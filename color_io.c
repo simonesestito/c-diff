@@ -15,8 +15,8 @@ int printf_ansi(const char *ansi_code, const char *format, ...) {
         result = vprintf(format, args); // Serve Vprintf perchè stiamo usando va_list
         printf("%s", ANSI_RESET_PREFIX);
     } else {
-        // Non è un TTY (es: file), usa la printf classica
-        result = printf(format, args);
+        // Non è un TTY (es: file), usa la printf classica (vprintf per via di va_list)
+        result = vprintf(format, args);
     }
 
     // Dealloca gli argomenti
