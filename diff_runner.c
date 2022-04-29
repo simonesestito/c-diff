@@ -13,7 +13,7 @@
  * @param verbose_output Indica se l'output deve essere verboso
  */
 void handle_different_output(const char *line1, const char *line2, const char *filename1, const char *filename2,
-                             int line_index, int verbose_output);
+                             unsigned int line_index, unsigned int verbose_output);
 
 /**
  * Mostra le linee identiche. Gestisci l'output in base ai flag utente.
@@ -24,8 +24,8 @@ void handle_different_output(const char *line1, const char *line2, const char *f
  * @param line_index Indice della linea all'interno dei due file
  * @param verbose_output Indica se l'output deve essere verboso
  */
-void handle_identical_output(const char *line, const char *filename1, const char *filename2, int line_index,
-                             int verbose_output);
+void handle_identical_output(const char *line, const char *filename1, const char *filename2, unsigned int line_index,
+                             unsigned int verbose_output);
 
 int run_diff(const char **buffer1, const char **buffer2, int buffer_lines, int prev_lines,
              const struct opt_parsed *options) {
@@ -34,9 +34,9 @@ int run_diff(const char **buffer1, const char **buffer2, int buffer_lines, int p
     const char *filename2 = opt_get_unnamed_arg(options, 1);
 
     // Ottieni i dettagli su come mostrare l'output
-    int show_different_lines = opt_is_present(options, 'd');
-    int show_identical_lines = opt_is_present(options, 'u');
-    int verbose_output = opt_is_present(options, 'v');
+    unsigned int show_different_lines = opt_is_present(options, 'd');
+    unsigned int show_identical_lines = opt_is_present(options, 'u');
+    unsigned int verbose_output = opt_is_present(options, 'v');
 
     // Indica se sono diversi
     int different = 0;
@@ -62,31 +62,31 @@ int run_diff(const char **buffer1, const char **buffer2, int buffer_lines, int p
 }
 
 void handle_different_output(const char *line1, const char *line2, const char *filename1, const char *filename2,
-                             int line_index, int verbose_output) {
+                             unsigned int line_index, unsigned int verbose_output) {
     if (verbose_output) {
-        // Stampa l'output completo, ovvero nome file, riga e contenuto
-        printf_ansi(ANSI_RED_BOLD_PREFIX, "#%d, %s:", line_index, filename1);
+        // Stampa l'output completo, ovvero nome file, riga (inizia da 1!) e contenuto
+        printf_ansi(ANSI_RED_BOLD_PREFIX, "#%d, %s:", line_index + 1, filename1);
         printf_ansi(ANSI_RED_PREFIX, " %s", line1);
-        printf_ansi(ANSI_GREEN_BOLD_PREFIX, "#%d, %s:", line_index, filename2);
+        printf_ansi(ANSI_GREEN_BOLD_PREFIX, "#%d, %s:", line_index + 1, filename2);
         printf_ansi(ANSI_GREEN_PREFIX, " %s", line2);
         printf_ansi(ANSI_GREEN_PREFIX, "\n");
     } else {
         // Stampa solo la linea diversa
-        printf_ansi(ANSI_RED_PREFIX, "%d\n", line_index);
+        printf_ansi(ANSI_RED_PREFIX, "%d\n", line_index + 1);
     }
 }
 
-void handle_identical_output(const char *line, const char *filename1, const char *filename2, int line_index,
-                             int verbose_output) {
+void handle_identical_output(const char *line, const char *filename1, const char *filename2, unsigned int line_index,
+                             unsigned int verbose_output) {
     if (verbose_output) {
         // Stampa l'output completo, ovvero nome file, riga e contenuto
-        printf_ansi(ANSI_BLUE_BOLD_PREFIX, "#%d, %s:", line_index, filename1);
+        printf_ansi(ANSI_BLUE_BOLD_PREFIX, "#%d, %s:", line_index + 1, filename1);
         printf_ansi(ANSI_BLUE_PREFIX, " %s", line);
-        printf_ansi(ANSI_BLUE_BOLD_PREFIX, "#%d, %s:", line_index, filename2);
+        printf_ansi(ANSI_BLUE_BOLD_PREFIX, "#%d, %s:", line_index + 1, filename2);
         printf_ansi(ANSI_BLUE_PREFIX, " %s", line);
         printf_ansi(ANSI_BLUE_PREFIX, "\n");
     } else {
         // Stampa solo la linea diversa
-        printf_ansi(ANSI_BLUE_PREFIX, "%d\n", line_index);
+        printf_ansi(ANSI_BLUE_PREFIX, "%d\n", line_index + 1);
     }
 }
