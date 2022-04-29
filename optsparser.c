@@ -15,7 +15,7 @@ int parse_options(const int argc,
         return -1;
     }
 
-    // Leggi prima i parametri senza nome (es: i nomi dei file di input)
+    // Leggi prima i parametri senza nome (es: i nomi dei file d'input)
     for (int i = 1; i <= unnamed_options; i++) {
         if (argv[i][0] == '-') {
             // Mi aspettavo un'opzione senza nome
@@ -32,7 +32,7 @@ int parse_options(const int argc,
 
     // Leggi le opzioni con nome (-o, -v, ...)
     // Indica se mi aspetto di leggere un parametro
-    // (>0, è la lettera dell'opzione di cui attendo il parametro)
+    // (> zero, è la lettera dell'opzione di cui attendo il parametro)
     char waiting_for_argument = 0;
     for (int i = unnamed_options + 1; i < argc; i++) {
         if ((argv[i][0] == '-') != (waiting_for_argument == 0)) {
@@ -63,7 +63,7 @@ int parse_options(const int argc,
             }
 
             // Ho bisogno di leggere subito dopo il parametro o un'altra opzione?
-            waiting_for_argument = descriptor->has_attribute ? option : 0;
+            waiting_for_argument = descriptor->has_attribute ? option : '\0';
             opt_set_present(output, option); // L'opzione è presente nell'output parsed
         }
     }
@@ -92,19 +92,18 @@ void opt_add_descriptor(opt_descriptors_t descriptors, char option, const char* 
     // Alloca una struttura
     descriptors[i] = malloc(sizeof(struct opt_descriptor));
     // Copia la descrizione, evitando l'eliminazione
-    descriptors[i]->description = calloc(strlen(description), sizeof(char));
-    strcpy(descriptors[i]->description, description);
+    descriptors[i]->description = description;
     // Assegna gli altri attributi semplici
     descriptors[i]->has_attribute = has_arg;
 }
 
 void opt_add_unnamed_descriptor(opt_descriptors_t descriptors, int index, const char* name) {
     // Equivale a un'opzione obbligatoria, dopo le lettere alfabetiche
-    opt_add_descriptor(descriptors, 'z' + 1 + index, name, 1);
+    opt_add_descriptor(descriptors, (char)('z' + 1 + index), name, 1);
 }
 
-int opt_is_present(const struct opt_parsed *parsed, char option) {
-    return parsed->opts_mask & (1 << (option - 'a'));
+unsigned int opt_is_present(const struct opt_parsed *parsed, char option) {
+    return parsed->opts_mask & (1u << (option - 'a'));
 }
 
 void opt_set_present(struct opt_parsed *parsed, char option) {
@@ -125,7 +124,6 @@ void free_descriptor(const opt_descriptors_t descriptors) {
         if (descriptors[i] == NULL)
             continue;
 
-        free((char*) descriptors[i]->description);
         free(descriptors[i]);
     }
 }

@@ -13,12 +13,12 @@ struct opt_descriptor {
     /**
      * Descrizione dell'opzione, mostrata all'utente nell'help
      */
-    char *description;
+    const char *description;
 
     /**
      * Indica se questa opzione vuole un attributo
      */
-    char has_attribute;
+    int has_attribute;
 };
 
 /**
@@ -99,7 +99,7 @@ int count_unnamed_options(const opt_descriptors_t descriptors);
  * @param option Carattere nome dell'opzione
  * @return 0 se non è presente, un altro numero altrimenti
  */
-int opt_is_present(const struct opt_parsed *parsed, char option);
+unsigned int opt_is_present(const struct opt_parsed *parsed, char option);
 
 /**
  * Imposta un'opzione come presente nelle opzioni post-parsing.

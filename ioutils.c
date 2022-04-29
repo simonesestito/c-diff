@@ -21,13 +21,13 @@ int redirect_stdout(const char *filename) {
     if (close(STDOUT_FILENO) == -1) return -1;
     // Apri il nuovo file.
     // Gli verrà assegnato il primo disponibile, ovvero proprio quello dello stdout appena chiuso
-    if (open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644) == -1) return -1;
+    if (open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644) != STDOUT_FILENO) return -1;
     return 0;
 }
 
-FILE* open_read_file(const char *filename) {
+FILE *open_read_file(const char *filename) {
     // Apri un file in sola lettura, gestendo l'output di errore
-    FILE* file = fopen(filename, "r");
+    FILE *file = fopen(filename, "r");
     if (file == NULL)
         fprintf(stderr, "Errore nell'apertura del file %s: %s\n", filename, strerror(errno));
     return file;
@@ -41,7 +41,7 @@ int read_lines(FILE *file, char **buffer) {
     int i;
     for (i = 0; i < LINES_TO_READ && lasterror >= 0; i++) {
         free(buffer[i]);
-        char* line = NULL; // Verrà allocato da getline, ma dovrà essere liberato a mano
+        char *line = NULL; // Verrà allocato da getline, ma dovrà essere liberato a mano
         size_t alloc_size = 0; // Spazio allocato nel buffer line
         lasterror = getline(&line, &alloc_size, file);
         buffer[i] = line;
@@ -53,10 +53,11 @@ int read_lines(FILE *file, char **buffer) {
         return -1;
     }
 
-    if (i < LINES_TO_READ) {
-        // Non sono state lette tutte le linee.
-        // Termina con NULL
-        buffer[i] = NULL;
+    // Se non ho letto tutte le righe, nel buffer ce ne sono
+    // alcune di vecchie letture, ancora allocate. Liberiamole
+    for (int j = i; j < LINES_TO_READ; j++) {
+        free(buffer[j]);
+        buffer[j] = NULL;
     }
 
     return i - 1;
@@ -66,4 +67,5 @@ void free_buffer(char **buffer) {
     // Libera tutte le linee allocate da getline() nel buffer
     for (int i = 0; i < LINES_TO_READ && buffer[i] != NULL; i++)
         free(buffer[i]);
+    // Il buffer stesso è stato allocato sullo stack
 }

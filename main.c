@@ -55,8 +55,8 @@ int main(int argc, const char **argv) {
 
     // Effettua la lettura in buffer da 50 righe, facendo il diff
     int diff_result = 0; // Indica se i file sono uguali (0) o diversi (1)
-    char *buffer1[LINES_TO_READ] = {0};
-    char *buffer2[LINES_TO_READ] = {0};
+    char *buffer1[LINES_TO_READ] = { 0 };
+    char *buffer2[LINES_TO_READ] = { 0 };
     int num_lines; // Numero minimo di righe lette
     int prev_lines = 0; // Linee lette nelle iterazioni precedenti
 
@@ -81,6 +81,10 @@ int main(int argc, const char **argv) {
 
         prev_lines += num_lines;
     } while (num_lines > 0);
+
+    // Chiudi i file
+    fclose(file1);
+    fclose(file2);
 
     if (num_lines < 0) {
         // Si è verificato un errore
@@ -119,6 +123,7 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) 
     // Prova ad eseguire il parsing, oppure mostra il messaggio di utilizzo
     if (parse_options(argc, argv, options, parsed_options) == -1) {
         print_help(argv[0], options);
+        free_descriptor(options);
         return -1;
     }
 
