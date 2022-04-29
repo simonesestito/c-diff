@@ -132,8 +132,16 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options) 
     free_descriptor(options);
 
     // Controlla opzioni mutuamente esclusive o casi particolari
-    if (opt_is_present(parsed_options, 'd') && opt_is_present(parsed_options, 'u')) {
+    int contains_d = opt_is_present(parsed_options, 'd');
+    int contains_u = opt_is_present(parsed_options, 'u');
+    if (contains_d && contains_u) {
         fprintf(stderr, "Le opzioni -d e -u sono mutuamente esclusive\n");
+        return -1;
+    }
+
+    int contains_v = opt_is_present(parsed_options, 'v');
+    if (!contains_u && !contains_d && contains_v) {
+        fprintf(stderr, "Errore: -v senza -d ne -u non ha senso\n");
         return -1;
     }
     return 0;
