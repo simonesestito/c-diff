@@ -44,9 +44,15 @@ int parse_options(const int argc,
             // Leggi l'opzione
             const char option = argv[i][1];
             const int option_index = option - 'a';
+            if (option_index < 0 || option_index >= 26 || argv[i][2] != '\0') {
+                // Opzione invalida
+                fprintf(stderr, "Opzione non valida: %s\n\n", argv[i]);
+                return -1;
+            }
             const struct opt_descriptor *descriptor = descriptors[option_index];
             if (descriptor == NULL) {
                 // Opzione inesistente
+                fprintf(stderr, "Opzione non riconosciuta: %s\n\n", argv[i]);
                 return -1;
             }
 
