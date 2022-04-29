@@ -15,7 +15,7 @@ void stdout_redirect_if_requested(const struct opt_parsed *parsed_options) {
 }
 
 int redirect_stdout(const char *filename) {
-    if (close(1) == -1) return -1;
+    if (close(STDOUT_FILENO) == -1) return -1;
     if (open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644) == -1) return -1;
     return 0;
 }

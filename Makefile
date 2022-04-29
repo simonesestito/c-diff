@@ -9,7 +9,7 @@ OUT_EXEC := hw1
 all: $(BUILD_DIR) $(OUT_EXEC)
 
 clean:
-	rm -rf $(BUILD_DIR)/ $(OUT_EXEC)
+	rm -rf $(BUILD_DIR)/ $(OUT_EXEC) $(wildcard *.log)
 
 $(OUT_EXEC): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@

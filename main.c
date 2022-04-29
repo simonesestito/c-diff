@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include "optsparser.h"
 #include "ioutils.h"
 #include "diff_runner.h"
+#include "color_io.h"
 
 /**
  * Gestisci le opzioni da input, leggendo le stringhe in ARGV
@@ -26,8 +26,10 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options);
  * @return Il numero minore dei due
  */
 inline int min_diff(int a, int b, int *flag) {
-    if (a != b)
+    if (a != b) {
+        printf("Linee diverse %d %d\n", a, b);
         *flag = 1;
+    }
 
     return a < b ? a : b;
 }
@@ -43,8 +45,10 @@ int main(int argc, const char **argv) {
     stdout_redirect_if_requested(&parsed_options);
 
     // Apri i due file
-    FILE *file1 = open_read_file(opt_get_unnamed_arg(&parsed_options, 0));
-    FILE *file2 = open_read_file(opt_get_unnamed_arg(&parsed_options, 1));
+    const char *filename1 = opt_get_unnamed_arg(&parsed_options, 0);
+    const char *filename2 = opt_get_unnamed_arg(&parsed_options, 1);
+    FILE *file1 = open_read_file(filename1);
+    FILE *file2 = open_read_file(filename2);
     if (file1 == NULL || file2 == NULL)
         return EXIT_FAILURE;
 
@@ -52,12 +56,12 @@ int main(int argc, const char **argv) {
     int diff_result = 0; // Indica se i file sono uguali (0) o diversi (1)
     char *buffer1[LINES_TO_READ] = {0};
     char *buffer2[LINES_TO_READ] = {0};
-    int num_lines = LINES_TO_READ; // Valore massimo iniziale, poi si considera sempre il minore
+    int num_lines; // Numero minimo di righe lette
     int prev_lines = 0; // Linee lette nelle iterazioni precedenti
 
     do {
         // Leggi il primo file, tenendo conto delle linee lette effettive
-        num_lines = min_diff(read_lines(file1, buffer1), num_lines, &diff_result);
+        num_lines = read_lines(file1, buffer1);
 
         if (num_lines > 0) {
             // Non leggere se non ho letto nulla, o se c'è stato un errore (-1)
@@ -85,6 +89,15 @@ int main(int argc, const char **argv) {
     // Free delle linee lette nel buffer. Devono essere liberate manualmente.
     free_buffer(buffer1);
     free_buffer(buffer2);
+
+    int show_different_summary = opt_is_present(&parsed_options, 'g');
+    int show_identical_summary = opt_is_present(&parsed_options, 's');
+
+    if (show_different_summary && diff_result) {
+        printf_ansi(ANSI_BOLD_PREFIX, "I file %s e %s sono differenti\n", filename1, filename2);
+    } else if (show_identical_summary && !diff_result) {
+        printf_ansi(ANSI_BOLD_PREFIX, "I file %s e %s sono identici\n", filename1, filename2);
+    }
 
     // Come il vero diff, l'exit code è 1 se diversi, 0 se uguali
     return diff_result;
