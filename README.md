@@ -84,6 +84,8 @@ cat test14.log
 ```
 ./hw1 test_files/b_20.txt   test_files/b_20.txt
 echo “Exit code: $?”
+./hw1 test_files/a1_20.txt   test_files/b_20.txt
+echo “Exit code: $?”
 ```
 
 
