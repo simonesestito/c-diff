@@ -27,7 +27,6 @@ int parse_input(int argc, const char **argv, struct opt_parsed *parsed_options);
  */
 inline int min_diff(int a, int b, int *flag) {
     if (a != b) {
-        printf("Linee diverse %d %d\n", a, b);
         *flag = 1;
     }
 
