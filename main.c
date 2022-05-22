@@ -42,7 +42,9 @@ int main(int argc, const char **argv) {
     }
 
     // Effettua redirect output stdout -> file se -o è presente
-    stdout_redirect_if_requested(&parsed_options);
+    if (stdout_redirect_if_requested(&parsed_options) == -1) {
+        return EXIT_FAILURE;
+    }
 
     // Apri i due file
     const char *filename1 = opt_get_unnamed_arg(&parsed_options, 0);
