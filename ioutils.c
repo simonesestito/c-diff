@@ -29,6 +29,12 @@ int stdout_redirect_if_requested(const struct opt_parsed *parsed_options) {
             fprintf(stderr, "Errore nella redirezione di stdout su %s: %s\n", outfile, strerror(errno));
             return -1;
         }
+
+        // Chiudi il file descriptor originale
+        if (close(fd) == -1) {
+            fprintf(stderr, "Errore nella chiusura del file descriptor %d: %s\n", fd, strerror(errno));
+            return -1;
+        }
     }
 
     return 0;
